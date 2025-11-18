@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Quick Upload to Cloudinary</title>
+    <style>
+        body {
+            font-family: Arial;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+
+        .upload-box {
+            border: 2px dashed #4F46E5;
+            padding: 30px;
+            text-align: center;
+        }
+
+        button {
+            background: #4F46E5;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            cursor: pointer;
+        }
+
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f0f0f0;
+            word-break: break-all;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Quick Upload to Cloudinary</h1>
+    <div class="upload-box">
+        <input type="file" id="fileInput" accept="image/*,video/*">
+        <br><br>
+        <button onclick="uploadFile()">Upload to Cloudinary</button>
+    </div>
+    <div id="result"></div>
+
+    <script>
+        async function uploadFile() {
+            const fileInput = document.getElementById('fileInput');
+            const resultDiv = document.getElementById('result');
+
+            if (!fileInput.files[0]) {
+                alert('Please select a file');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+
+            resultDiv.innerHTML = 'Uploading...';
+
+            try {
+                const response = await fetch('/api/v1/admin/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    resultDiv.innerHTML = `
+                        <div class="result">
+                            <strong>✅ Upload Successful!</strong><br><br>
+                            <strong>URL:</strong><br>
+                            <input type="text" value="${data.url}" style="width: 100%; padding: 8px;" onclick="this.select()">
+                            <br><br>
+                            <button onclick="navigator.clipboard.writeText('${data.url}')">Copy URL</button>
+                            <br><br>
+                            ${data.url.match(/\.(jpg|jpeg|png|gif|webp)$/i) ?
+                            `<img src="${data.url}" style="max-width: 100%; margin-top: 10px;">` :
+                            ''}
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `<div class="result">❌ Upload failed: ${data.error}</div>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="result">❌ Error: ${error.message}</div>`;
+            }
+        }
+    </script>
+</body>
+
+</html>
