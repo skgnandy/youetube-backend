@@ -12,14 +12,14 @@ app.use(cors({
     credentials: true
 }));
 
+// Setup Admin Panel routes
+const { adminJs, adminRouter } = await setupAdminPanel();
+app.use(adminJs.options.rootPath, adminRouter);
+
 app.use(express.json({ limit: "16kb" }));
 app.use(express.urlencoded({ extended: true, limit: "16kb" }));
 app.use(express.static("public"));
 app.use(cookieParser());
-
-// Setup Admin Panel routes
-const { adminJs, adminRouter } = await setupAdminPanel();
-app.use(adminJs.options.rootPath, adminRouter);
 
 // Route imports
 import adminUploadRoutes from "./routes/admin.routes.js";
